@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const process = require('process');
 const fs = require('fs');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 const User = require('../modelController/User');
 
 const storage = multer.diskStorage({
@@ -17,6 +18,28 @@ const storage = multer.diskStorage({
 })
 
 const upload = multer({ storage: storage });
+
+router.post('/signin', (req, res) => {
+    User.find({ email: req.body.email })
+        .then(data => {
+            bcrypt.compare(req.body.password, data[0].password)
+                .then(isRegistered => {
+                    if (isRegistered) {
+                        jwt.sign({
+                            firstName: data[0].firstName,
+                            lastName: data[0].lastName,
+                            email: data[0].email,
+                            address: data[0].address,
+                            phone: data[0].phone,
+                        }, 'privateKey', { expiresIn: '7d' }, (err, token) => {
+                            res.status(201).send(token);
+                        })
+                    } else {
+                        res.status(401).send('User is not registered!');
+                    }
+                })
+        })
+})
 
 router.post('/signup', upload.single('profileImage'), (req, res) => {
     const user = {};
