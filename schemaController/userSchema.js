@@ -36,7 +36,8 @@ const userSchema = new Schema({
         data: Buffer,
         contentType: 'image/jpg'
     },
-    uploads: [{ type: Schema.Types.ObjectId, refs: 'Photo' }]
+    uploads: [{ type: Schema.Types.ObjectId, refs: 'Photo' }],
+    likes: [{ type: Schema.Types.ObjectId, refs: 'Photo' }]
 })
 
 module.exports = userSchema;
