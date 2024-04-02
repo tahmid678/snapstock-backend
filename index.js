@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const userRouter = require('./routerController');
 const app = express();
 
 mongoose.connect('mongodb://127.0.0.1:27017/snapstock')
@@ -10,6 +11,8 @@ mongoose.connect('mongodb://127.0.0.1:27017/snapstock')
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use('/user', userRouter);
 
 app.listen(3001, () => {
     console.log('Application is running on port 3001');
