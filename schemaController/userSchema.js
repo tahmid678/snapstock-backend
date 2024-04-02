@@ -34,7 +34,7 @@ const userSchema = new Schema({
     },
     profileImage: {
         data: Buffer,
-        contentType: 'image/jpg'
+        contentType: String
     },
     uploads: [{ type: Schema.Types.ObjectId, refs: 'Photo' }],
     likes: [{ type: Schema.Types.ObjectId, refs: 'Photo' }]
