@@ -41,31 +41,47 @@ router.post('/signin', (req, res) => {
         })
 })
 
-router.post('/signup', upload.single('profileImage'), (req, res) => {
-    const user = {};
-    bcrypt.genSalt(10, (err, salt) => {
-        bcrypt.hash(req.body.password, salt, (err, hashedPassword) => {
-            const data = fs.readFileSync(path.join(process.cwd() + '/images/' + req.file.originalname));
-            user.firstName = req.body.firstName;
-            user.lastName = req.body.lastName;
-            user.email = req.body.email;
-            user.password = hashedPassword;
-            user.address = req.body.address;
-            user.phone = req.body.phone;
-            user.profileImage = {
-                data: data,
-                contentType: "image/jpg"
-            }
+router.post('/signup', upload.single('profileImage'), async (req, res) => {
+    try {
+        const isEmailExisted = await User.findOne({ email: req.body.email });
+        if (isEmailExisted) {
+            fs.unlinkSync(path.join(process.cwd() + '/images/' + req.file.originalname));
+            res.status(200).send("Email already in use! Try with different email.")
+        } else {
+            const user = {};
+            bcrypt.genSalt(10, (err, salt) => {
+                bcrypt.hash(req.body.password, salt, (err, hashedPassword) => {
+                    const data = fs.readFileSync(path.join(process.cwd() + '/images/' + req.file.originalname));
+                    user.firstName = req.body.firstName;
+                    user.lastName = req.body.lastName;
+                    user.email = req.body.email;
+                    user.password = hashedPassword;
+                    user.address = req.body.address;
+                    user.phone = req.body.phone;
+                    user.profileImage = {
+                        data: data,
+                        contentType: "image/jpg"
+                    }
 
-            const newUser = new User(user);
-            newUser.save()
-                .then(data => {
-                    fs.unlinkSync(path.join(process.cwd() + '/images/' + req.file.originalname));
-                    res.status(201).send('User sign up successfull!');
+                    const newUser = new User(user);
+                    newUser.save()
+                        .then(data => {
+                            fs.unlinkSync(path.join(process.cwd() + '/images/' + req.file.originalname));
+                            res.status(201).send('User sign up successfull!');
+                        })
+                        .catch(err => res.send(500).send('Internal server error!'));
                 })
-                .catch(err => res.send(500).send('Internal server error!'));
-        })
-    })
+            })
+        }
+    } catch (err) {
+        res.status(500).send('Internal Server Error!');
+    }
+})
+
+router.put('/update', (req, res) => {
+    User.updateOne({ email: req.body.email }, { $set: { firstName: req.body.firstName, lastName: req.body.lastName, email: req.body.email, address: req.body.address, phone: req.body.phone } })
+        .then(data => res.status(201).send(data))
+        .catch(err => res.status(500).send(err));
 })
 
 module.exports = router;
