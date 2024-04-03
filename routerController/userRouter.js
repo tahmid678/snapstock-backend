@@ -6,6 +6,7 @@ const process = require('process');
 const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
+const isAuthenticated = require('../utils/checkAuthentication');
 const User = require('../modelController/User');
 
 const storage = multer.diskStorage({
@@ -19,6 +20,12 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+router.get('/my-photos', isAuthenticated, (req, res) => {
+    User.findOne({ _id: req.userId }, { 'uploads': 1 }).populate('uploads')
+        .then(data => res.status(200).send(data))
+        .catch(err => console.log(err));
+})
+
 router.post('/signin', (req, res) => {
     User.find({ email: req.body.email })
         .then(data => {
@@ -31,6 +38,7 @@ router.post('/signin', (req, res) => {
                             email: data[0].email,
                             address: data[0].address,
                             phone: data[0].phone,
+                            userId: data[0]._id
                         }, 'privateKey', { expiresIn: '7d' }, (err, token) => {
                             res.status(201).send(token);
                         })
