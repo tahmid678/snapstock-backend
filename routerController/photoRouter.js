@@ -25,6 +25,26 @@ router.get('/get-all-photos', (req, res) => {
         .catch(err => console.log(err));
 })
 
+router.get('/get-photo/:photoId', (req, res) => {
+    const photoId = req.params.photoId;
+    Photo.findOne({ _id: photoId }).populate('author')
+        .then(data => res.status(201).send(data))
+        .catch(err => console.log(err));
+})
+
+router.post('/create-comment/:photoId', (req, res) => {
+    const photoId = req.params.photoId;
+    const comment = {
+        name: req.body.name,
+        comment: req.body.comment,
+        time: Date.now()
+    }
+
+    Photo.updateOne({ _id: photoId }, { $push: { comments: comment } })
+        .then(data => res.status(200).send(data))
+        .catch(err => console.log(err));
+})
+
 router.post('/upload', isAuthenticated, upload.single('photo'), (req, res) => {
     const photo = {};
     const data = fs.readFileSync(path.join(process.cwd() + '/photos/' + req.file.originalname));
@@ -55,9 +75,26 @@ router.post('/upload', isAuthenticated, upload.single('photo'), (req, res) => {
 
 })
 
-router.get('/', (req, res) => {
-    Photo.find({ name: "Football" }, { photo: 0 }).populate('author')
-        .then(data => res.send(data))
+router.put('/like-photo/:photoId', isAuthenticated, (req, res) => {
+    const photoId = req.params.photoId;
+    Photo.updateOne({ _id: photoId }, { $inc: { likes: 1 } })
+        .then(data => {
+            User.updateOne({ _id: req.userId }, { $push: { likes: photoId } })
+                .then(data => res.status(200).send(data))
+                .catch(err => console.log(err));
+        })
+        .catch(err => console.log(err));
+})
+
+router.put('/unlike-photo/:photoId', isAuthenticated, (req, res) => {
+    const photoId = req.params.photoId;
+    Photo.updateOne({ _id: photoId }, { $inc: { likes: -1 } })
+        .then(data => {
+            User.updateOne({ _id: req.userId }, { $pull: { likes: photoId } })
+                .then(data => res.status(200).send(data))
+                .catch(err => console.log(err));
+        })
+        .catch(err => console.log(err));
 })
 
 module.exports = router;
