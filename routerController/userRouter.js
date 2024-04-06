@@ -9,6 +9,7 @@ const jwt = require('jsonwebtoken');
 const isAuthenticated = require('../utils/checkAuthentication');
 const User = require('../modelController/User');
 
+// multer storage declaration for files
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'images');
@@ -20,6 +21,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+// route for getting user details based on the user id
 router.get('/get-profile/:userId', (req, res) => {
     const userId = req.params.userId;
     User.findOne({ _id: userId })
@@ -27,18 +29,21 @@ router.get('/get-profile/:userId', (req, res) => {
         .catch(err => console.log(err));
 })
 
+// route for getting all the liked photos of a specific user
 router.get('/get-liked-photos', isAuthenticated, (req, res) => {
     User.findOne({ _id: req.userId }, { likes: 1, _id: 0 }).populate('likes')
         .then(data => res.status(200).send(data))
         .catch(err => console.log(err));
 })
 
+// route for getting all the photos uploded by a user
 router.get('/my-photos', isAuthenticated, (req, res) => {
     User.findOne({ _id: req.userId }, { 'uploads': 1 }).populate('uploads')
         .then(data => res.status(200).send(data))
         .catch(err => console.log(err));
 })
 
+// route for getting user details
 router.get('/get-user', isAuthenticated, (req, res) => {
     User.findOne({ _id: req.userId })
         .then(data => res.status(200).send(data))
