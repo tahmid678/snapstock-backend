@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+// schema for photo
 const photoSchema = new Schema({
     name: {
         type: String,
