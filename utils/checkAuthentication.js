@@ -1,5 +1,6 @@
 const { jwtDecode } = require('jwt-decode');
 
+// utility middleware that checks whether a user is authenticated
 const isAuthenticated = (req, res, next) => {
     const token = req.headers.token;
     if (token) {
