@@ -21,13 +21,33 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+router.route('/:userId')
+    .get((req, res) => {
+        const userId = req.params.userId;
+        User.findOne({ _id: userId })
+            .then(data => res.status(200).send(data))
+            .catch(err => console.log(err));
+    })
+    .put(isAuthenticated, (req, res) => {
+        const userId = req.params.userId;
+        User.updateOne({ _id: userId }, { $set: { firstName: req.body.firstName, lastName: req.body.lastName, email: req.body.email, address: req.body.address, phone: req.body.phone } })
+            .then(data => res.status(201).send(data))
+            .catch(err => res.status(500).send(err));
+    })
+    .delete(isAuthenticated, (req, res) => {
+        const userId = req.params.userId;
+        User.deleteOne({ _id: userId })
+            .then(data => res.status(200).send(data))
+            .catch(err => res.status(500).send(err));
+    })
+
 // route for getting user details based on the user id
-router.get('/get-profile/:userId', (req, res) => {
-    const userId = req.params.userId;
-    User.findOne({ _id: userId })
-        .then(data => res.status(200).send(data))
-        .catch(err => console.log(err));
-})
+// router.get('/get-profile/:userId', (req, res) => {
+//     const userId = req.params.userId;
+//     User.findOne({ _id: userId })
+//         .then(data => res.status(200).send(data))
+//         .catch(err => console.log(err));
+// })
 
 // route for getting all the liked photos of a specific user
 router.get('/get-liked-photos', isAuthenticated, (req, res) => {
@@ -133,13 +153,6 @@ router.post('/signup', upload.single('profileImage'), async (req, res) => {
     } catch (err) {
         res.status(500).send('Internal Server Error!');
     }
-})
-
-// update route, users profile update request comes here 
-router.put('/update', (req, res) => {
-    User.updateOne({ email: req.body.email }, { $set: { firstName: req.body.firstName, lastName: req.body.lastName, email: req.body.email, address: req.body.address, phone: req.body.phone } })
-        .then(data => res.status(201).send(data))
-        .catch(err => res.status(500).send(err));
 })
 
 module.exports = router;
