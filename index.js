@@ -1,8 +1,11 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const userRouter = require('./routerController/userRouter');
 const photoRouter = require('./routerController/photoRouter');
+const categoryRouter = require('./routerController/categoryRouter');
+const commentRouter = require('./routerController/commentRouter');
 const app = express();
 
 mongoose.connect('mongodb://127.0.0.1:27017/snapstock')
@@ -15,6 +18,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/user', userRouter);
 app.use('/photo', photoRouter);
+app.use('/category', categoryRouter);
+app.use('/comment', commentRouter);
 
 app.listen(3001, () => {
     console.log('Application is running on port 3001');

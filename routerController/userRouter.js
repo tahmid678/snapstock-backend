@@ -1,8 +1,10 @@
+require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const process = require('process');
+const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
@@ -40,14 +42,6 @@ router.route('/:userId')
             .then(data => res.status(200).send(data))
             .catch(err => res.status(500).send(err));
     })
-
-// route for getting user details based on the user id
-// router.get('/get-profile/:userId', (req, res) => {
-//     const userId = req.params.userId;
-//     User.findOne({ _id: userId })
-//         .then(data => res.status(200).send(data))
-//         .catch(err => console.log(err));
-// })
 
 // route for getting all the liked photos of a specific user
 router.get('/get-liked-photos', isAuthenticated, (req, res) => {
@@ -122,33 +116,38 @@ router.post('/signup', upload.single('profileImage'), async (req, res) => {
             })
         } else {
             const user = {};
-            console.log(req.file);
-            bcrypt.genSalt(10, (err, salt) => {
-                bcrypt.hash(req.body.password, salt, (err, hashedPassword) => {
-                    const data = fs.readFileSync(path.join(process.cwd() + '/images/' + req.file.originalname));
-                    user.firstName = req.body.firstName;
-                    user.lastName = req.body.lastName;
-                    user.email = req.body.email;
-                    user.password = hashedPassword;
-                    user.address = req.body.address;
-                    user.phone = req.body.phone;
-                    user.profileImage = {
-                        data: data,
-                        contentType: "image/jpg"
-                    }
+            cloudinary.uploader.upload(path.join(process.cwd() + '/images/' + req.file.originalname), { folder: 'snapstock/user' })
+                .then(result => {
+                    bcrypt.genSalt(10, (err, salt) => {
+                        bcrypt.hash(req.body.password, salt, (err, hashedPassword) => {
+                            user.firstName = req.body.firstName;
+                            user.lastName = req.body.lastName;
+                            user.email = req.body.email;
+                            user.password = hashedPassword;
+                            user.address = req.body.address;
+                            user.phone = req.body.phone;
+                            user.profileImageURL = result.secure_url;
 
-                    const newUser = new User(user);
-                    newUser.save()
-                        .then(data => {
-                            fs.unlinkSync(path.join(process.cwd() + '/images/' + req.file.originalname));
-                            res.status(201).send({
-                                status: 'Success',
-                                message: 'User sign up successfull! You will be redirected to login page!'
-                            });
+                            const newUser = new User(user);
+                            newUser.save()
+                                .then(data => {
+                                    fs.unlinkSync(path.join(process.cwd() + '/images/' + req.file.originalname));
+                                    res.status(201).send({
+                                        status: 'Success',
+                                        message: 'User sign up successfull! You will be redirected to login page!'
+                                    });
+                                })
+                                .catch(err => {
+                                    console.log(err);
+                                    res.status(500).send("Internal server error!");
+                                });
                         })
-                        .catch(err => res.send(500).send('Internal server error!'));
+                    })
                 })
-            })
+                .catch(err => {
+                    console.log(err);
+                    res.status(500).send("Internal server error!");
+                })
         }
     } catch (err) {
         res.status(500).send('Internal Server Error!');

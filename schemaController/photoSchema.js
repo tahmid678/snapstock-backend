@@ -30,13 +30,13 @@ const photoSchema = new Schema({
         type: Number,
         default: 0
     },
-    comments: [
-        {
-            name: String,
-            comment: String,
-            time: Date
-        }
-    ],
+    // comments: [
+    //     {
+    //         name: String,
+    //         comment: String,
+    //         time: Date
+    //     }
+    // ],
     author: {
         type: Schema.Types.ObjectId,
         ref: 'User'
