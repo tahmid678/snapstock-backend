@@ -18,7 +18,7 @@ const photoSchema = new Schema({
         max: 200,
         required: true
     },
-    photo: {
+    photoURL: {
         type: String,
         required: true
     },
