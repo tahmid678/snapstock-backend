@@ -22,7 +22,7 @@ const upload = multer({ storage: storage })
 
 // route for getting all the photos
 router.get('/get-all-photos', (req, res) => {
-    Photo.find().populate('author')
+    Photo.find()
         .then(data => res.status(201).send(data))
         .catch(err => console.log(err));
 })

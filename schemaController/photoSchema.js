@@ -19,8 +19,8 @@ const photoSchema = new Schema({
         required: true
     },
     photo: {
-        data: Buffer,
-        contentType: String
+        type: String,
+        required: true
     },
     date: {
         type: Date,
@@ -30,17 +30,10 @@ const photoSchema = new Schema({
         type: Number,
         default: 0
     },
-    // comments: [
-    //     {
-    //         name: String,
-    //         comment: String,
-    //         time: Date
-    //     }
-    // ],
     author: {
         type: Schema.Types.ObjectId,
         ref: 'User'
     }
-})
+});
 
 module.exports = photoSchema;

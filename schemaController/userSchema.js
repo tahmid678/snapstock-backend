@@ -37,6 +37,11 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user'
+    },
     uploads: [{ type: Schema.Types.ObjectId, ref: 'Photo' }],
     likes: [{ type: Schema.Types.ObjectId, ref: 'Photo' }]
 })
